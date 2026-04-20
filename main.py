@@ -4,7 +4,6 @@ import random
 import nextcord
 from nextcord.ext import commands
 import re
-from PIL import Image
 import textrace
 import asyncio
 
