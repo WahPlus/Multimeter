@@ -233,7 +233,7 @@ async def on_message(message: nextcord.Message):
                         json.dump(db, f)
 
                     await message.channel.send(f"**{message.author.name}** has won the race! {race["prize"]} internet points have been deposited into **{message.author.name}**'s account.")
-        elif random.randint(1, 20) == 1:
+        elif random.randint(1, 100) == 1:
             # Start text race
             internet_value, text, image_buffer = textrace.generate_image()
             await message.channel.send(f"**TEXT RACE!**\nType this text in 60 seconds to get {internet_value} internet points!", file=nextcord.File(image_buffer, filename="bumbler.png"))
