@@ -136,6 +136,9 @@ async def remove(interaction: nextcord.Interaction, tag: int):
         await interaction.send("You need the Manage Server permission to manage tags")
         return
     if tag_db[str(interaction.guild_id)] and tag_db[str(interaction.guild_id)][tag]:
+        tag_db[str(interaction.guild_id)].pop(tag)
+        with open("db.json", "w") as f:
+            json.dump(db, f)
         await interaction.send(f"Tag removed!\n")
     else:
         await interaction.send(f"No such tag ")
