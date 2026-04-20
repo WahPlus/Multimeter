@@ -105,6 +105,15 @@ def tokenize(multimod: str):
             raise TokenError(f"{action_tokens[action[0]] or setting_tokens[action[0]]} tokens expected in action group, got {len(action)}")
     return tokenized
 
+def detokenize(items):
+    result = []
+    for item in items:
+        if isinstance(item, list):
+            result.append(detokenize(item))
+        else:
+            result.append(item)
+    return " ".join(result)
+
 @bot.event
 async def on_ready():
     print(f'We have logged in as {bot.user}')
@@ -149,7 +158,7 @@ async def list_(interaction: nextcord.Interaction):
     string = ""
     if tag_db[str(interaction.guild_id)]:
         for i, tag in enumerate(tag_db[str(interaction.guild_id)]):
-            string += f"{i}. `{tag}`\n"
+            string += f"{i} - `{detokenize(tag["condition"]) + " {" + detokenize(tag["action"]) + "}"}`\n"
     else:
         string = "No tags for this server."
     await interaction.send(embed=nextcord.Embed(color=nextcord.Color.blue(), title="Tag list", description=string))
