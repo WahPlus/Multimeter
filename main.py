@@ -255,6 +255,14 @@ async def on_message(message: nextcord.Message):
                 ongoing_races.pop(message.channel.id)
                 await message.channel.send(f"**Time's up!**\nThe answer was **{text}**.")
 
+@bot.slash_command()
+async def fortune(interaction: nextcord.Interaction):
+    await interaction.response.defer()
+    with open("fortune.txt") as f:
+        data = f.read()
+    data = data.split("\n%\n")
+    await interaction.send(f"```{random.choice(data)}```")
+
 with open("token.txt") as f:
     token = f.read()
 
