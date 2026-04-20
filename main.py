@@ -26,7 +26,9 @@ condition_tokens = {
     "^"
 }
 variable_tokens = {
-    "msg"
+    "msg",
+    "userid",
+    "channelid"
 }
 match_tokens = {
     "has",
@@ -184,6 +186,10 @@ async def on_message(message: nextcord.Message):
                         if type(condition_group) == list:
                             if condition_group[0] == "msg":
                                 comparing_var = message.content
+                            if condition_group[0] == "userid":
+                                comparing_var = str(message.author.id)
+                            if condition_group[0] == "channelid":
+                                comparing_var = str(message.channel.id)
 
                             previous_condition = condition
 
