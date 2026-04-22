@@ -203,7 +203,53 @@ async def balance(interaction: nextcord.Interaction, user: nextcord.User = None)
 
 @ipoints.subcommand(description="Transfer internet points to someone else")
 async def transfer(interaction: nextcord.Interaction, user: nextcord.User, reason: str = "no reason"):
-    print("poopen sharden farden")
+    await interaction.send("Maybe in 2027")
+
+@ipoints.subcommand(description="LET'S GO GAMBLING!!!!!!!!!! 50% odds")
+async def gamble(interaction: nextcord.Interaction, bet: float):
+    await interaction.response.defer()
+    ipoints = get_user_data(interaction.user.id)[0]
+    if ipoints < bet:
+        await interaction.send("You don't have enough internet points for that.")
+        return
+    gamble_string = "02030"
+    for i in range(random.randint(1, 4)):
+        gamble_string = gamble_string[1:] + gamble_string[0]
+
+    def conv_gamble_string(gamble_string: str):
+        gamble_string = gamble_string[:2] + str(int(gamble_string[2]) + 4) + gamble_string[3:]
+        gamble_string = gamble_string.replace("0", "Q")
+        gamble_string = gamble_string.replace("2", "E")
+        gamble_string = gamble_string.replace("3", "R")
+        gamble_string = gamble_string.replace("4", "T")
+        gamble_string = gamble_string.replace("6", "U")
+        gamble_string = gamble_string.replace("7", "I")
+
+        gamble_string = gamble_string.replace("Q", "<:gamble_0:1496554530714685542>")
+        gamble_string = gamble_string.replace("E", "<:gamble_2:1496554554232143913>")
+        gamble_string = gamble_string.replace("R", "<:gamble_3:1496554571009364059>")
+        gamble_string = gamble_string.replace("T", "<:gambleselector_0:1496554598406557867>")
+        gamble_string = gamble_string.replace("U", "<:gambleselector_2:1496554619516616825>")
+        gamble_string = gamble_string.replace("I", "<:gambleselector_3:1496554646318354834>")
+        return f"**Gambling for {str(bet)} internet points...**\n{gamble_string}"
+
+    await interaction.send(conv_gamble_string(gamble_string))
+    for i in range(10):
+        await asyncio.sleep((i + 1) / 10)
+        gamble_string = gamble_string[1:] + gamble_string[0]
+        await interaction.edit_original_message(content=conv_gamble_string(gamble_string))
+    await asyncio.sleep(1.1)
+    multiplier = int(gamble_string[2])
+    # No need for checks if there's a balance here because there has to be in order to bet
+    db["users"][str(interaction.user.id)]["balance"] += bet * (multiplier - 1)
+    with open("db.json", "w") as f:
+        json.dump(db, f)
+    if gamble_string[2] == "0":
+        await interaction.edit_original_message(content=conv_gamble_string(gamble_string) + f"\n:pensive: *You lost...*\nYou have regained **0x** your original bet.\nYou now have {db["users"][str(interaction.user.id)]["balance"]} internet points.")
+    if gamble_string[2] == "2":
+        await interaction.edit_original_message(content=conv_gamble_string(gamble_string) + f"\n:money_with_wings: **You Win!**\nYou have regained **2x** your original bet.\nYou now have {db["users"][str(interaction.user.id)]["balance"]} internet points.")
+    if gamble_string[2] == "3":
+        await interaction.edit_original_message(content=conv_gamble_string(gamble_string) + f"\n:moneybag: ***JACKPOT!*** :moneybag:\nYou have regained **3x** your original bet.\nYou now have {db["users"][str(interaction.user.id)]["balance"]} internet points.")
 
 @bot.event
 async def on_message(message: nextcord.Message):
