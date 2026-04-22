@@ -50,6 +50,16 @@ setting_tokens = {
     "check_self": 2
 }
 
+def get_user_data(user_id: int):
+    ipoints = 0
+    bank = 0
+    if str(user_id) in db["users"].keys():
+        if "balance" in db["users"][str(user_id)].keys():
+            ipoints = db["users"][str(user_id)]["balance"]
+        if "bank" in db["users"][str(user_id)]:
+            bank = db["users"][str(user_id)]["bank"]
+    return ipoints, bank
+
 def tokenize(multimod: str):
     tokenized = {}
     regex_output = re.findall(r"^\s*(.+?)\s*{\s*(.+)\s*}\s*$", multimod)
@@ -80,7 +90,8 @@ def tokenize(multimod: str):
         raise TokenError("action contains unclosed quotes")
     tokenized["action"] = re.split(r";\s*", tokenized["action"])
     for i, action in enumerate(tokenized["action"]):
-        tokenized["action"][i] = re.findall(r"\"[^\"]*\"|'[^\"]*'|[^\s\"]+", action)
+        tokenized["action"][i] = re.findall(r"\"[^\"]*\"|'[^']*'|[^\s\"]+", action)
+
         for i2, action_token in enumerate(tokenized["action"][i]):
             tokenized["action"][i][i2] = action_token.strip("\"").strip("'")
 
@@ -172,6 +183,27 @@ async def export(interaction: nextcord.Interaction):
 @tag.subcommand(name="import", description="Import tags from a txt file")
 async def import_(interaction: nextcord.Interaction, file: nextcord.Attachment):
     await interaction.send("Maybe in 2027")
+
+@bot.slash_command()
+async def ipoints(interaction: nextcord.Interaction):
+    pass
+
+@ipoints.subcommand(description="View your internet point balance")
+async def balance(interaction: nextcord.Interaction, user: nextcord.User = None):
+    await interaction.response.defer()
+    if not user:
+        user = interaction.user
+        user_name = "You"
+    else:
+        user_name = user.name
+    ipoints, bank = get_user_data(user.id)
+    if bank < 0:
+        await interaction.send(f"You have **{ipoints}** internet points and **{-bank}** loaned from the bank.")
+    await interaction.send(f"You have **{ipoints}** internet points and **{bank}** deposited to the bank.")
+
+@ipoints.subcommand(description="Transfer internet points to someone else")
+async def transfer(interaction: nextcord.Interaction, user: nextcord.User, reason: str = "no reason"):
+    print("poopen sharden farden")
 
 @bot.event
 async def on_message(message: nextcord.Message):
