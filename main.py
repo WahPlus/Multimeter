@@ -251,6 +251,15 @@ async def gamble(interaction: nextcord.Interaction, bet: float):
     if gamble_string[2] == "3":
         await interaction.edit_original_message(content=conv_gamble_string(gamble_string) + f"\n:moneybag: ***JACKPOT!*** :moneybag:\nYou have regained **3x** your original bet.\nYou now have {db["users"][str(interaction.user.id)]["balance"]} internet points.")
 
+@bot.slash_command()
+async def say(interaction: nextcord.Interaction, text: str = "", attachment: nextcord.Attachment = None):
+    if interaction.user.id == 1043523548339241001:
+        data = await attachment.read()
+        await interaction.channel.send(text, file = nextcord.File(io.BytesIO(data), filename=attachment.filename))
+        await interaction.send("OK", ephemeral=True)
+    else:
+        await interaction.send("Wrong guy", ephemeral=True)
+
 @bot.event
 async def on_message(message: nextcord.Message):
     if message.author != bot.user:

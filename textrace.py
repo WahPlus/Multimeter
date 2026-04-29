@@ -20,8 +20,31 @@ special = [
     "multimeter is very very awesome",
     "i hide my true sexuality",
     "i tried eating my phone",
-    "i urinated in fridge once"
+    "i urinated in fridge once",
+    "ok ok ok ok ok"
 ]
+
+def hex_to_rgb(hex_color: int) -> tuple[int, int, int]:
+    r = (hex_color >> 16) & 0xFF
+    g = (hex_color >> 8) & 0xFF
+    b = hex_color & 0xFF
+    return r, g, b
+
+def relative_luminance(hex_color: int) -> float:
+    r, g, b = hex_to_rgb(hex_color)
+    def linearize(c: int) -> float:
+        c /= 255.0
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    return 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
+
+def contrast(color1: int, color2: int) -> float:
+    l1 = relative_luminance(color1)
+    l2 = relative_luminance(color2)
+    lighter = max(l1, l2)
+    darker = min(l1, l2)
+    ratio = (lighter + 0.05) / (darker + 0.05)  # 1.0 to 21.0
+    normalized = (ratio - 1) / 20.0              # 0.0 to 1.0 linear
+    return math.log1p(normalized * (math.e - 1))
 
 def generate_image():
     if random.randint(1, 100) == 1:
@@ -34,18 +57,20 @@ def generate_image():
     font = ImageFont.truetype("/usr/share/fonts/TTF/FiraCodeNerdFont-Medium.ttf", 40)
     x1, y1, x2, y2 = font.getbbox(text)
     width = x2 - x1 + (y2 - y1) * 2
-    height = (y2 - y1)*3
-    img = Image.new("RGB", (width, height), random.randint(0x000000, 0xFFFFFF))
+    height = (y2 - y1) * 3
+    col1 = random.randint(0x000000, 0xFFFFFF)
+    col2 = random.randint(0x000000, 0xFFFFFF)
+    img = Image.new("RGB", (width, height), col1)
     draw = ImageDraw.Draw(img)
     rand3 = random.random()
     for i in range(int(rand3 * 20)):
         draw.line([(random.randint(0, int(width)), random.randint(0, int(height))), (random.randint(0, int(width)), random.randint(0, int(height)))], fill=random.randint(0x000000, 0xFFFFFF), width=3)
-    draw.text((-x1 + (y2 - y1), -y1 + (y2 - y1)), text, fill=random.randint(0x000000, 0xFFFFFF), font_size=20, font=font)
+    draw.text((-x1 + (y2 - y1), -y1 + (y2 - y1)), text, fill=col2, font_size=20, font=font)
 
     array = numpy.array(img)
     height, width = array.shape[:2]
     rand1 = random.random()
-    rand2 = random.random()
+    rand2 = random.random() * 2 - 1
     for x in range(width):
         shift = int((math.sin(x / 50) * (y2 - y1) / 3) * rand1 + x * rand2 / 3)
         array[:, x] = numpy.roll(array[:, x], shift, axis=0)
@@ -57,7 +82,8 @@ def generate_image():
         img = img.filter(ImageFilter.GaussianBlur(radius=1))
         img = img.filter(ImageFilter.EDGE_ENHANCE)
 
-    internet_value = rand1 * rand2 * rand3 * len(text)
+    internet_value = len(text) * (abs(rand2) * 3 + rand1 + rand3 - contrast(col1, col2)) / 8
+    print(contrast(col1, col2))
     print(internet_value)
 
     buffer = io.BytesIO()
