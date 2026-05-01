@@ -254,8 +254,11 @@ async def gamble(interaction: nextcord.Interaction, bet: float):
 @bot.slash_command()
 async def say(interaction: nextcord.Interaction, text: str = "", attachment: nextcord.Attachment = None):
     if interaction.user.id == 1043523548339241001:
-        data = await attachment.read()
-        await interaction.channel.send(text, file = nextcord.File(io.BytesIO(data), filename=attachment.filename))
+        file = None
+        if attachment:
+            data = await attachment.read()
+            file = nextcord.File(io.BytesIO(data), filename=attachment.filename)
+        await interaction.channel.send(text, file = file)
         await interaction.send("OK", ephemeral=True)
     else:
         await interaction.send("Wrong guy", ephemeral=True)
